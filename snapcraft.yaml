@@ -19,22 +19,20 @@ apps:
   cemu-emulator:
     command: usr/bin/Cemu
     desktop: usr/applications/cemu-emulator.desktop
+    common-id: info.cemu.Cemu
     extensions:
       - gnome
     plugs:
+      - unity7
+      - screen-inhibit-control
+      - audio-playback
+      - network
+      - network-bind
       - home
       - removable-media
-      - gtk-3-themes
-      - icon-themes
-      - desktop
-      - desktop-legacy
-      - x11
-      - opengl
-      - wayland
-      - audio-playback
+      - mount-observe
       - joystick
-      - screen-inhibit-control
-      - network
+      - bluez
 
 parts:
   cemu-emulator:
