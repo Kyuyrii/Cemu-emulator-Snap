@@ -1,0 +1,69 @@
+name: cemu-emulator
+base: core24
+version: '2.6'
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
+summary: Nintendo Wii U Emulator
+description: |
+  Cemu is a Nintendo Wii U emulator that is able to run most Wii U games and homebrew in a playable state. Created by Exzap, and written in C/C++.
+
+  This emulator aims at providing both high-accuracy and performance, and is actively being developed with new features and fixes to increase compatibility, convenience and usability.
+
+  It was written from scratch and development on the project began roughly early 2015.
+grade: stable
+confinement: strict
+
+apps:
+  cemu-emulator:
+    command: usr/games/bin/Cemu
+    desktop: usr/gui/Cemu-emulator.desktop
+    common-id: info.cemu.Cemu
+    extensions: [gnome]
+    plugs:
+      - unity7
+      - screen-inhibit-control
+      - audio-playback
+      - network
+      - network-bind
+      - home
+      - removable-media
+      - mount-observe
+      - joystick
+      - bluez
+
+parts:
+  cemu:
+    plugin: dump
+    source: https://github.com/cemu-project/Cemu/releases/download/v2.6/cemu-2.6-ubuntu-22.04-x64.zip
+    override-build: |
+      mkdir -p $CRAFT_PART_INSTALL/usr/games/bin/
+      mkdir -p $CRAFT_PART_INSTALL/usr/games/share/Cemu/
+      mv -f Cemu_2.6/Cemu $CRAFT_PART_INSTALL/usr/games/bin/
+      mv -f Cemu_2.6/gameProfiles $CRAFT_PART_INSTALL/usr/games/share/Cemu/
+      mv -f Cemu_2.6/resources $CRAFT_PART_INSTALL/usr/games/share/Cemu/
+      chmod 777 $CRAFT_PART_INSTALL/usr/games/bin/Cemu
+    prime:
+      - usr/games/bin/Cemu
+      - usr/games/share/Cemu/gameProfiles
+      - usr/games/share/Cemu/resources
+
+  launcher:
+    after: [cemu]
+    plugin: nil
+    source: ./launcher
+    override-build: |
+      mkdir -p $CRAFT_PART_INSTALL/usr/gui
+      mv -f Cemu-emulator.desktop $CRAFT_PART_INSTALL/usr/gui/
+      mv -f Cemu-emulator.png $CRAFT_PART_INSTALL/usr/gui/
+    prime:
+      - usr/gui
+
+  dependencies:
+    after: [launcher]
+    plugin: nil
+    stage-packages:
+      - libbluetooth3
+    prime:
+      - usr/lib/x86_64-linux-gnu/libbluetooth.so*
