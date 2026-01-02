@@ -33,6 +33,10 @@ apps:
       - joystick
       - bluez
 
+plugs:
+  shared-memory:
+    private: true
+
 parts:
   cemu:
     plugin: dump
