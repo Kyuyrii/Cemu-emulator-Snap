@@ -14,11 +14,12 @@ description: |
   It was written from scratch and development on the project began roughly early 2015.
 grade: stable
 confinement: strict
+icon: info.cemu.Cemu.png
 
 apps:
   cemu-emulator:
-    command: usr/games/bin/Cemu
-    desktop: usr/gui/Cemu-emulator.desktop
+    command: usr/bin/Cemu
+    desktop: info.cemu.Cemu.desktop
     common-id: info.cemu.Cemu
     extensions: [gnome]
     plugs:
@@ -27,6 +28,7 @@ apps:
       - audio-playback
       - network
       - network-bind
+      - network-status
       - home
       - removable-media
       - mount-observe
@@ -38,36 +40,33 @@ plugs:
     private: true
 
 parts:
-  cemu:
+  cemu-app:
     plugin: dump
-    source: https://github.com/cemu-project/Cemu/releases/download/v2.6/cemu-2.6-ubuntu-22.04-x64.zip
+    source: https://github.com/cemu-project/Cemu/releases/download/v$SNAPCRAFT_PROJECT_VERSION/cemu-$SNAPCRAFT_PROJECT_VERSION-ubuntu-22.04-x64.zip
     override-build: |
-      mkdir -p $CRAFT_PART_INSTALL/usr/games/bin/
-      mkdir -p $CRAFT_PART_INSTALL/usr/games/share/Cemu/
-      mv -f Cemu_2.6/Cemu $CRAFT_PART_INSTALL/usr/games/bin/
-      mv -f Cemu_2.6/gameProfiles $CRAFT_PART_INSTALL/usr/games/share/Cemu/
-      mv -f Cemu_2.6/resources $CRAFT_PART_INSTALL/usr/games/share/Cemu/
-      chmod 777 $CRAFT_PART_INSTALL/usr/games/bin/Cemu
+      craftctl default
+      chmod +x $CRAFT_PART_INSTALL/Cemu_$SNAPCRAFT_PROJECT_VERSION/Cemu
+    organize:
+      Cemu_$SNAPCRAFT_PROJECT_VERSION/Cemu: usr/bin/Cemu
+      Cemu_$SNAPCRAFT_PROJECT_VERSION/gameProfiles: usr/share/Cemu/gameProfiles
+      Cemu_$SNAPCRAFT_PROJECT_VERSION/resources: usr/share/Cemu/resources
     prime:
-      - usr/games/bin/Cemu
-      - usr/games/share/Cemu/gameProfiles
-      - usr/games/share/Cemu/resources
-
-  launcher:
-    after: [cemu]
-    plugin: nil
-    source: ./launcher
-    override-build: |
-      mkdir -p $CRAFT_PART_INSTALL/usr/gui
-      mv -f Cemu-emulator.desktop $CRAFT_PART_INSTALL/usr/gui/
-      mv -f Cemu-emulator.png $CRAFT_PART_INSTALL/usr/gui/
-    prime:
-      - usr/gui
+      - usr/bin/Cemu
+      - usr/share/Cemu/gameProfiles
+      - usr/share/Cemu/resources
 
   dependencies:
-    after: [launcher]
+    after: [cemu-app]
     plugin: nil
     stage-packages:
       - libbluetooth3
     prime:
-      - usr/lib/x86_64-linux-gnu/libbluetooth.so*
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libbluetooth.so*
+
+  desktop-file:
+    after: [dependencies]
+    plugin: nil
+    build-packages: [curl]
+    override-build: |
+      curl -o $CRAFT_PART_INSTALL/info.cemu.Cemu.desktop https://raw.githubusercontent.com/cemu-project/Cemu/refs/heads/main/dist/linux/info.cemu.Cemu.desktop
+      sed -i 's|Name=Cemu|Name=Cemu [Kyu]|' $CRAFT_PART_INSTALL/info.cemu.Cemu.desktop
