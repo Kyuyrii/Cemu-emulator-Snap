@@ -18,6 +18,7 @@ icon: info.cemu.Cemu.png
 
 apps:
   cemu-emulator:
+    command-chain: [override-xdg-paths]
     command: usr/bin/Cemu
     desktop: info.cemu.Cemu.desktop
     common-id: info.cemu.Cemu
@@ -43,9 +44,12 @@ parts:
   cemu-app:
     plugin: dump
     source: https://github.com/cemu-project/Cemu/releases/download/v$SNAPCRAFT_PROJECT_VERSION/cemu-$SNAPCRAFT_PROJECT_VERSION-ubuntu-22.04-x64.zip
+    build-packages: [curl]
     override-build: |
       craftctl default
       chmod +x $CRAFT_PART_INSTALL/Cemu_$SNAPCRAFT_PROJECT_VERSION/Cemu
+      curl -o $CRAFT_PART_INSTALL/info.cemu.Cemu.desktop https://raw.githubusercontent.com/cemu-project/Cemu/refs/heads/main/dist/linux/info.cemu.Cemu.desktop
+      sed -i 's|Name=Cemu|Name=Cemu [Kyu]|' $CRAFT_PART_INSTALL/info.cemu.Cemu.desktop
     organize:
       Cemu_$SNAPCRAFT_PROJECT_VERSION/Cemu: usr/bin/Cemu
       Cemu_$SNAPCRAFT_PROJECT_VERSION/gameProfiles: usr/share/Cemu/gameProfiles
@@ -54,6 +58,7 @@ parts:
       - usr/bin/Cemu
       - usr/share/Cemu/gameProfiles
       - usr/share/Cemu/resources
+      - info.cemu.Cemu.desktop
 
   dependencies:
     after: [cemu-app]
@@ -63,10 +68,7 @@ parts:
     prime:
       - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libbluetooth.so*
 
-  desktop-file:
+  command-chain:
     after: [dependencies]
-    plugin: nil
-    build-packages: [curl]
-    override-build: |
-      curl -o $CRAFT_PART_INSTALL/info.cemu.Cemu.desktop https://raw.githubusercontent.com/cemu-project/Cemu/refs/heads/main/dist/linux/info.cemu.Cemu.desktop
-      sed -i 's|Name=Cemu|Name=Cemu [Kyu]|' $CRAFT_PART_INSTALL/info.cemu.Cemu.desktop
+    plugin: dump
+    source: ./command-chain/
